@@ -14,7 +14,6 @@ demonstrated in the examples below
 ### Requesting the list of answer providers
 
 ```http
-# Requesting list of providers:
 GET http://localhost:42774/list
 ```
 
@@ -34,7 +33,6 @@ Response:
 ### Requesting an answer
 
 ```http
-# Requesting list of providers:
 POST http://localhost:42774/send
 Content-Type: application/json
 
