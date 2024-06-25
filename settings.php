@@ -15,22 +15,30 @@
 // along with Moodle. If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Definition of the service provided by this plugin.
+ * Settings for 'local_harpiaajax'.
  *
  * @package    local_harpiaajax
  * @copyright  2024 C4AI - USP
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+if ($hassiteconfig) { 
+    $settings = new admin_settingpage('local_harpiaajax', get_string('pluginname', 'local_harpiaajax'));
+    $ADMIN->add('localplugins', $settings);
 
-$functions = array(
-    'local_harpiaajax_send_message' => array(
-        'classname'     => 'send_message',
-        'classpath'     => 'local/harpiaajax/send_message.php',
-        'methodname'    => 'execute',
-        'description'   => 'Send a message to a language model',
-        'type'          => 'write',
-        'ajax'          => true,
-    )
-);
+    $setting = new admin_setting_configtext(
+        // setting id:
+        'local_harpiaajax/answerprovideraddress', 
+        // setting name:                                        
+        get_string('answer_provider_address', 'local_harpiaajax'),     
+        // setting description: 
+        get_string('answer_provider_address_desc', 'local_harpiaajax'),
+        // default value: 
+        '',
+        // type:                                                             
+        PARAM_URL                                                    
+    );
 
+    $settings->add($setting);
+
+}

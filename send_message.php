@@ -32,7 +32,7 @@ require_once($CFG->libdir . "/externallib.php");
  *     }])
  *
  * @package    local_harpiaajax
- * @copyright  2024 Vinícius B. Matos
+ * @copyright  2024 C4AI - USP
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class send_message extends external_api
@@ -113,7 +113,8 @@ class send_message extends external_api
             'query' => $query,
             'answer_provider' => $provider
         );
-        $url = 'http://172.17.0.1:42774/send';  # TODO
+        $address = rtrim(get_config('local_harpiaajax', 'answerprovideraddress'), '/');
+        $url = $address . '/send';
     
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -123,8 +124,9 @@ class send_message extends external_api
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     
         $response = curl_exec($ch);
-        if (curl_errno($ch)){
-             // TODO: handle error
+        $error = curl_errno($ch);
+        if ($error) {
+            error_log(`CURL error: $error`);
         }
         curl_close($ch);
     
@@ -136,17 +138,19 @@ class send_message extends external_api
      * 
      * @return the list of current answer providers
      */
-    private static function fetch_providers() {
-        // TODO: remove hard-coded URL
-        $url = 'http://172.17.0.1:42774/list';  
+    public static function fetch_providers() {
+        $address = rtrim(get_config('local_harpiaajax', 'answerprovideraddress'), '/');
+        $url = $address . '/list';
     
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     
         $response = curl_exec($ch);
-        if (curl_errno($ch)){
-             // TODO: handle error
+        $response = curl_exec($ch);
+        $error = curl_errno($ch);
+        if ($error) {
+            error_log(`CURL error: $error`);
         }
         curl_close($ch);
     

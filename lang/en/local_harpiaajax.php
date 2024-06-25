@@ -18,9 +18,11 @@
  * Strings for 'local_harpiaajax' in English.
  *
  * @package    local_harpiaajax
- * @copyright  2024 Vinícius B. Matos
+ * @copyright  2024 C4AI - USP
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 $string['pluginname'] = 'HarpIA AJAX';
   
+$string['answer_provider_address'] = "Answer provider address";
+$string['answer_provider_address_desc'] = "Address of the answer provider server, e.g. \"http://localhost.localdomain:42774/\"";

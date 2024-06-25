@@ -18,14 +18,14 @@
  * A web service plug-in that interacts with an external language model.
  *
  * @package    local_harpiaajax
- * @copyright  2024 Vinícius B. Matos
+ * @copyright  2024 C4AI - USP
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2024052906;        // The current plugin version (Date: YYYYMMDDXX).
+$plugin->version   = 2024062401;        // The current plugin version (Date: YYYYMMDDXX).
 $plugin->requires  = 2023100400;        // Requires this Moodle version.
 $plugin->component = 'local_harpiaajax';
 $plugin->maturity = MATURITY_ALPHA;
