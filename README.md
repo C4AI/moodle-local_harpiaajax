@@ -55,7 +55,15 @@ Response:
 
 ### Current implementations of answer providers
 
-The repository [TODO: add link] contains an implementation of a few
+The repository [HarpIA Moodle - Answer Providers] contains an implementation of a few
 answer providers, such as:
 - GPT models (via OpenAI API);
 - constant utterances (for quick testing purposes).
+
+### Dependencies 
+
+- Moodle &geq; 4.0.3.
+
+### Plugins that use this plugin
+
+- [HarpIA Ajax](../../../moodle-datafield_harpiainteraction) plugin.
