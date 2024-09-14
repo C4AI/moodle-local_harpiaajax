@@ -145,8 +145,7 @@ class send_message extends external_api
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    
-        $response = curl_exec($ch);
+
         $response = curl_exec($ch);
         $error = curl_errno($ch);
         if ($error) {
