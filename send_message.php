@@ -45,18 +45,23 @@ class send_message extends external_api
 
         return new external_function_parameters(
           array("query" => new external_value(PARAM_TEXT, "User query"),
-                "provider_hash" => new external_value(PARAM_TEXT, "Hash of answer provider")),
+                "provider_hash" => new external_value(PARAM_TEXT, "Hash of answer provider"),
+                "history" => 
+                new external_multiple_structure(
+                    new external_value(PARAM_TEXT, "Message history")
+                ),
+            ),
         );
     }
 
     
-    public static function execute($query, $provider_hash)
+    public static function execute($query, $provider_hash, $history)
     {
         // Implementation of the service.
 
         $params = self::validate_parameters(
             self::execute_parameters(),
-            array('query' => $query, 'provider_hash' => $provider_hash)
+            array('query' => $query, 'provider_hash' => $provider_hash, 'history' => $history)
         );
 
         $providers = self::fetch_providers()->providers;
@@ -71,7 +76,7 @@ class send_message extends external_api
         if ($chosen_provider === null)
             return null;
  
-        $result = self::send_a_message($query, $chosen_provider);
+        $result = self::send_a_message($query, $chosen_provider, $history);
 
         return array(
             "output" => array(
@@ -108,10 +113,11 @@ class send_message extends external_api
      * 
      * @return array the generated output
     */
-    private static function send_a_message($query, $provider) {
+    private static function send_a_message($query, $provider, $history) {
         $data = array(
             'query' => $query,
-            'answer_provider' => $provider
+            'answer_provider' => $provider,
+            'history' => $history
         );
         $address = rtrim(get_config('local_harpiaajax', 'answerprovideraddress'), '/');
         $url = $address . '/send';
