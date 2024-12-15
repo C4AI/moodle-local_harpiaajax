@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2024062401;        // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2023100400;        // Requires this Moodle version.
+$plugin->version = 2024121501;        // The current plugin version (Date: YYYYMMDDXX).
+$plugin->requires = 2024100701;        // Requires this Moodle version.
 $plugin->component = 'local_harpiaajax';
 $plugin->maturity = MATURITY_ALPHA;

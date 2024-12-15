@@ -38,49 +38,75 @@ require_once($CFG->libdir . "/externallib.php");
 class send_message extends external_api
 {
 
-    
+
     public static function execute_parameters()
     {
         // Definition of the input parameters.
 
         return new external_function_parameters(
-          array("query" => new external_value(PARAM_TEXT, "User query"),
+            array(
+                "query" => new external_value(PARAM_TEXT, "User query"),
                 "provider_hash" => new external_value(PARAM_TEXT, "Hash of answer provider"),
-                "history" => 
-                new external_multiple_structure(
-                    new external_value(PARAM_TEXT, "Message history")
-                ),
+                "history" =>
+                    new external_multiple_structure(
+                        new external_value(PARAM_TEXT, "Message history")
+                    ),
+                "harpia_data_field_id" => new external_value(PARAM_INT, "Database field id", VALUE_DEFAULT, -1),
             ),
         );
     }
 
-    
-    public static function execute($query, $provider_hash, $history)
+
+    public static function execute($query, $provider_hash, $history, $harpia_data_field_id)
     {
         // Implementation of the service.
 
+        global $DB, $CFG;
+
         $params = self::validate_parameters(
             self::execute_parameters(),
-            array('query' => $query, 'provider_hash' => $provider_hash, 'history' => $history)
+            array(
+                'query' => $query,
+                'provider_hash' => $provider_hash,
+                'history' => $history,
+                'harpia_data_field_id' => $harpia_data_field_id,
+            )
         );
 
         $providers = self::fetch_providers()->providers;
         $chosen_provider = null;
-        foreach ($providers as $provider) {
+        $system_prompt = "";
+        foreach ($providers as $provider_item) {
+            $provider = $provider_item->name;
             if (password_verify($provider, $provider_hash)) {
                 $chosen_provider = $provider;
+                $system_prompt = $provider_item->default_system_prompt;
                 break;
             }
-            $hashes[$provider] = $h;
         }
         if ($chosen_provider === null)
             return null;
- 
-        $result = self::send_a_message($query, $chosen_provider, $history);
+
+
+        if ($harpia_data_field_id >= 0) {
+            $where = ['id' => $harpia_data_field_id];
+            $prompt = $DB->get_field('data_fields', 'param3', $where);
+            if ($prompt !== null and $prompt !== '') {
+                $system_prompt = $prompt;
+            }
+        }
+
+
+        $result = self::send_a_message(
+            $query,
+            $chosen_provider,
+            $history,
+            $system_prompt
+        );
 
         return array(
             "output" => array(
-                "answer" =>  $result->text, 
+                "answer" => $result->text,
                 "contexts" => array(
                 )
             )
@@ -88,7 +114,8 @@ class send_message extends external_api
     }
 
 
-    public static function execute_returns() {
+    public static function execute_returns()
+    {
         // Definition of the output format.
 
         return new external_single_structure([
@@ -101,7 +128,7 @@ class send_message extends external_api
         ]);
     }
 
-    
+
     // The two functions below interact with the external answer providers
     //   (implemented in Python - see the directory "harpia_answer_providers").
 
@@ -112,42 +139,45 @@ class send_message extends external_api
      * @param string $provider  the hash associated to the provider
      * 
      * @return array the generated output
-    */
-    private static function send_a_message($query, $provider, $history) {
+     */
+    private static function send_a_message($query, $provider, $history, $system_prompt)
+    {
         $data = array(
             'query' => $query,
             'answer_provider' => $provider,
-            'history' => $history
+            'history' => $history,
+            'system_prompt' => $system_prompt,
         );
         $address = rtrim(get_config('local_harpiaajax', 'answerprovideraddress'), '/');
         $url = $address . '/send';
-    
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    
+
         $response = curl_exec($ch);
         $error = curl_errno($ch);
         if ($error) {
             error_log(`CURL error: $error`);
         }
         curl_close($ch);
-    
+
         return json_decode($response);
-    }  
+    }
 
     /** 
      * Obtain the list of answer providers.
      * 
-     * @return the list of current answer providers
+     * @return array list of current answer providers
      */
-    public static function fetch_providers() {
+    public static function fetch_providers()
+    {
         $address = rtrim(get_config('local_harpiaajax', 'answerprovideraddress'), '/');
         $url = $address . '/list';
-    
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -158,9 +188,9 @@ class send_message extends external_api
             error_log(`CURL error: $error`);
         }
         curl_close($ch);
-    
+
         return json_decode($response);
     }
-    
-    
+
+
 }

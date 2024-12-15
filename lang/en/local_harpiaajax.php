@@ -23,6 +23,6 @@
  */
 
 $string['pluginname'] = 'HarpIA AJAX';
-  
+
 $string['answer_provider_address'] = "Answer provider address";
 $string['answer_provider_address_desc'] = "Address of the answer provider server, e.g. \"http://localhost.localdomain:42774/\"";

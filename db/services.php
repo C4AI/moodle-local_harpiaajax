@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle. If not, see <https://www.gnu.org/licenses/>.
 
-/**
+/**  
  * Definition of the service provided by this plugin.
  *
  * @package    local_harpiaajax
@@ -23,14 +23,13 @@
  */
 
 
-$functions = array(
-    'local_harpiaajax_send_message' => array(
-        'classname'     => 'send_message',
-        'classpath'     => 'local/harpiaajax/send_message.php',
-        'methodname'    => 'execute',
-        'description'   => 'Send a message to a language model',
-        'type'          => 'write',
-        'ajax'          => true,
-    )
-);
-
+$functions = [
+    'local_harpiaajax_send_message' => [
+        'classname' => 'send_message',
+        'classpath' => 'local/harpiaajax/send_message.php',
+        'methodname' => 'execute',
+        'description' => 'Send a message to a language model',
+        'type' => 'write',
+        'ajax' => true,
+    ]
+];

@@ -22,21 +22,21 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-if ($hassiteconfig) { 
+if ($hassiteconfig) {
     $settings = new admin_settingpage('local_harpiaajax', get_string('pluginname', 'local_harpiaajax'));
     $ADMIN->add('localplugins', $settings);
 
     $setting = new admin_setting_configtext(
         // setting id:
-        'local_harpiaajax/answerprovideraddress', 
+        'local_harpiaajax/answerprovideraddress',
         // setting name:                                        
-        get_string('answer_provider_address', 'local_harpiaajax'),     
+        get_string('answer_provider_address', 'local_harpiaajax'),
         // setting description: 
         get_string('answer_provider_address_desc', 'local_harpiaajax'),
         // default value: 
         '',
         // type:                                                             
-        PARAM_URL                                                    
+        PARAM_URL
     );
 
     $settings->add($setting);
