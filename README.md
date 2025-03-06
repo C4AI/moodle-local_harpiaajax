@@ -1,13 +1,14 @@
-# Moodle plugin: HarpIA Ajax
+# HarpIA Ajax
 
 HarpIA Ajax is a Moodle plugin that implements
-an AJAX interaction with an arbitrary answer provider,
-such as an external language model. 
+an interaction with an arbitrary answer provider
+such as an external language model.
 
 The actual calls to the language models are
-performed on the server.
-Currently, the plugin sends the requests
-to a (usually local) HTTP server that implements a simple API
+performed on the server: the plugin sends the requests
+to a (possibly local) instance of
+[HarpIA Model Gateway](https://github.com/C4AI/HarpIA_Model_Gateway),
+which implements a simple API
 demonstrated in the examples below
 (change the host and port accordingly).
 
