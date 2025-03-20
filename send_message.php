@@ -44,17 +44,18 @@ class send_message extends external_api
 
         return new external_function_parameters(
             [
-                "query" => new external_value(PARAM_TEXT, "User query"),
-                "field_id" => new external_value(PARAM_INT, "Database field id", VALUE_DEFAULT, -1),
+                "query" => new external_value(PARAM_TEXT, "User query", VALUE_REQUIRED, null, NULL_NOT_ALLOWED),
+                "field_id" => new external_value(PARAM_INT, "Database field id", VALUE_REQUIRED, null, NULL_NOT_ALLOWED),
+                "parent_rid" => new external_value(PARAM_INT, "Database field id", VALUE_DEFAULT, null, NULL_ALLOWED),
             ],
         );
     }
 
-    public static function execute_to_datafield_harpiainteraction($query, $field_id)
+    public static function execute_to_datafield_harpiainteraction($query, $field_id, $parent_rid = null)
     {
         // Implementation of the service.
 
-        global $DB, $CFG;
+        global $DB, $CFG, $USER;
 
 
         // Validate the input parameters..
@@ -63,29 +64,38 @@ class send_message extends external_api
             [
                 'query' => $query,
                 'field_id' => $field_id,
+                'parent_rid' => $parent_rid,
             ]
         );
 
         $system_prompt = "";
-        $where = ['id' => $field_id];
-        $d = $DB->get_field('data_fields', 'dataid', $where);
-        $system_prompt = $DB->get_field('data_fields', 'param3', $where);
-        $answer_provider = $DB->get_field('data_fields', 'param1', $where);
+        $record = $DB->get_record('data_fields', ['id' => $field_id]);
+        $d = $record->dataid;
+        $system_prompt = $record->param3;
+        $answer_provider = $record->param1;
+
+        $history = [];
+        if ($parent_rid) {
+            $where = ['fieldid' => $field_id, 'recordid' => $parent_rid];
+            $history = json_decode($DB->get_field('data_content', 'content2', $where) ?: '[]');
+        }
+
         // TODO: check permission  
 
         $result = self::send_a_message(
             $query,
             $answer_provider,
-            [], // TODO: implement history
+            $history,
             $system_prompt ?? ""
         );
 
         $now = time();
         $interaction_id = $DB->insert_record('data_harpiainteraction', [
             'timestamp' => $now,
-            'userid' => 0,
+            'userid' => $USER->id,
             'dataid' => $d,
-            'parentdataid' => null,
+            'recordid' => null,
+            'parentrecordid' => $parent_rid,
             'answer_provider' => $answer_provider,
             'query' => $query,
             'system_prompt' => $system_prompt,
