@@ -24,11 +24,11 @@
 
 
 $functions = [
-    'local_harpiaajax_send_message' => [
+    'local_harpiaajax_send_message_to_datafield_harpiainteraction' => [
         'classname' => 'send_message',
         'classpath' => 'local/harpiaajax/send_message.php',
-        'methodname' => 'execute',
-        'description' => 'Send a message to a language model',
+        'methodname' => 'execute_to_datafield_harpiainteraction',
+        'description' => 'Send a message and obtain its output (used by the HarpIA Interaction database plugin)',
         'type' => 'write',
         'ajax' => true,
     ]

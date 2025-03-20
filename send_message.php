@@ -27,94 +27,82 @@ require_once($CFG->libdir . "/externallib.php");
  *         methodname: "local_harpiaajax_send_message",
  *         args: {
  *             query: "user query here",
- *             provider_hash: "hash of the answer provider",
  *         },
  *     }])
  *
  * @package    local_harpiaajax
- * @copyright  2024 C4AI - USP
+ * @copyright  2025 C4AI - USP
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class send_message extends external_api
 {
 
 
-    public static function execute_parameters()
+    public static function execute_to_datafield_harpiainteraction_parameters()
     {
-        // Definition of the input parameters.
+        // Definition of the parameters for the function execute_to_datafield_harpiainteraction().
 
         return new external_function_parameters(
-            array(
+            [
                 "query" => new external_value(PARAM_TEXT, "User query"),
-                "provider_hash" => new external_value(PARAM_TEXT, "Hash of answer provider"),
-                "history" =>
-                    new external_multiple_structure(
-                        new external_value(PARAM_TEXT, "Message history")
-                    ),
-                "harpia_data_field_id" => new external_value(PARAM_INT, "Database field id", VALUE_DEFAULT, -1),
-            ),
+                "field_id" => new external_value(PARAM_INT, "Database field id", VALUE_DEFAULT, -1),
+            ],
         );
     }
 
-
-    public static function execute($query, $provider_hash, $history, $harpia_data_field_id)
+    public static function execute_to_datafield_harpiainteraction($query, $field_id)
     {
         // Implementation of the service.
 
         global $DB, $CFG;
 
-        $params = self::validate_parameters(
-            self::execute_parameters(),
-            array(
+
+        // Validate the input parameters..
+        self::validate_parameters(
+            self::execute_to_datafield_harpiainteraction_parameters(),
+            [
                 'query' => $query,
-                'provider_hash' => $provider_hash,
-                'history' => $history,
-                'harpia_data_field_id' => $harpia_data_field_id,
-            )
+                'field_id' => $field_id,
+            ]
         );
 
-        $providers = self::fetch_providers()->providers;
-        $chosen_provider = null;
         $system_prompt = "";
-        foreach ($providers as $provider_item) {
-            $provider = $provider_item->name;
-            if (password_verify($provider, $provider_hash)) {
-                $chosen_provider = $provider;
-                $system_prompt = $provider_item->default_system_prompt;
-                break;
-            }
-        }
-        if ($chosen_provider === null)
-            return null;
-
-
-        if ($harpia_data_field_id >= 0) {
-            $where = ['id' => $harpia_data_field_id];
-            $prompt = $DB->get_field('data_fields', 'param3', $where);
-            if ($prompt !== null and $prompt !== '') {
-                $system_prompt = $prompt;
-            }
-        }
-
+        $where = ['id' => $field_id];
+        $d = $DB->get_field('data_fields', 'dataid', $where);
+        $system_prompt = $DB->get_field('data_fields', 'param3', $where);
+        $answer_provider = $DB->get_field('data_fields', 'param1', $where);
+        // TODO: check permission  
 
         $result = self::send_a_message(
             $query,
-            $chosen_provider,
-            $history,
-            $system_prompt
+            $answer_provider,
+            [], // TODO: implement history
+            $system_prompt ?? ""
         );
 
-        return array(
-            "output" => array(
+        $now = time();
+        $interaction_id = $DB->insert_record('data_harpiainteraction', [
+            'timestamp' => $now,
+            'userid' => 0,
+            'dataid' => $d,
+            'parentdataid' => null,
+            'answer_provider' => $answer_provider,
+            'query' => $query,
+            'system_prompt' => $system_prompt,
+            'answer' => $result->text,
+        ]);
+
+        return [
+            "output" => [
                 "answer" => $result->text,
-                "contexts" => array(
-                )
-            )
-        );
+                "contexts" => [],
+                "interaction_id" => $interaction_id,
+            ]
+        ];
     }
 
 
-    public static function execute_returns()
+    public static function execute_to_datafield_harpiainteraction_returns()
     {
         // Definition of the output format.
 
@@ -123,7 +111,8 @@ class send_message extends external_api
                 'answer' => new external_value(PARAM_TEXT, 'The answer text'),
                 'contexts' => new external_multiple_structure(
                     new external_single_structure(['text' => new external_value(PARAM_TEXT, 'The text in the context')]),
-                )
+                ),
+                'interaction_id' => new external_value(PARAM_INT, 'The id of the interaction')
             ])
         ]);
     }
@@ -135,8 +124,10 @@ class send_message extends external_api
     /** 
      * Send a message to the language model and return its output.
      * 
-     * @param string $query     the user query
-     * @param string $provider  the hash associated to the provider
+     * @param string $query         the user query
+     * @param string $provider      the provider name
+     * @param array  $history       the previous messages (user, model, user, model...)
+     * @param string $system_prompt the system prompt, if any
      * 
      * @return array the generated output
      */
