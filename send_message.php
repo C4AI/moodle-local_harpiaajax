@@ -77,7 +77,10 @@ class send_message extends external_api
         $history = [];
         if ($parent_rid) {
             $where = ['fieldid' => $field_id, 'recordid' => $parent_rid];
-            $history = json_decode($DB->get_field('data_content', 'content2', $where) ?: '[]');
+            $prev_record = $DB->get_record('data_content', $where);
+            $history = json_decode($prev_record->content2 ?: '[]');
+            array_push($history, $prev_record->content);  // query
+            array_push($history, $prev_record->content1); // answer
         }
 
         // TODO: check permission  
